@@ -2,35 +2,52 @@
 using UnityEngine;
 using System;
 
-public class Authentication
+public class Authentication : MonoBehaviour
 {
+    [SerializeField]
     private Socket socket;
 
+    [SerializeField]
     private CommandManager commandManager;
 
-    public static event Action<string> OnAuthentification = delegate { };
+    private UserData userData;
 
-    public Authentication(Socket socket, CommandManager commandManager)
+    public static event Action<UserData> OnAuthentification = delegate { };
+
+    private void OnEnable()
     {
-        this.socket = socket;
-        this.commandManager = commandManager;
-
-        this.commandManager.On("/nick", ReciveNickname);
+        socket.On(ServerEvents.ID, OnReciveID);
+        commandManager.On("/nick", SendNickname);
     }
 
-    public void OnDisable()
+    private void OnDisable()
     {
-        commandManager.Off("/nick", ReciveNickname);
+        socket.Off(ServerEvents.ID, OnReciveID);
+        commandManager.Off("/nick", SendNickname);
     }
 
-    private void ReciveNickname(string nick)
+    private void OnReciveID(NetworkMessage networkMessage)
     {
-        OnAuthentification(nick);
+        var message = JsonConvert.DeserializeObject<ReciveID>(networkMessage.jsonMessage);
+        userData.id = message.id;
+        SendNickname(userData.nick);
+    }
+
+    private void SendNickname(string nick)
+    {
+        userData.nick = nick;
+        OnAuthentification(userData);
         var nickMessage = new AuthData { nickname = nick };
         var nickJson = JsonConvert.SerializeObject(nickMessage);
 
         Debug.Log("NICK   " + nickJson);
 
         socket.Send(ClientEvents.SEND_NICKNAME, nickJson);
+    }
+
+    public void SetNickname(string nick)
+    {
+        Debug.Log(nick);
+        userData.nick = nick;
     }
 }

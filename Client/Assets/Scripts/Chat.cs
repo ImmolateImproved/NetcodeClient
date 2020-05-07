@@ -36,26 +36,23 @@ public class Chat : MonoBehaviour
 
     private void OnEnable()
     {
-        Authentication.OnAuthentification += SetNickname;
+        Authentication.OnAuthentification += SetUserdata;
         User.OnClick += SetPrivateMessageUser;
 
         socket.On(ServerEvents.CHAT_MSG, OnReciveMessage);
-        socket.On(ServerEvents.ID, OnReciveID);
     }
 
     private void OnDisable()
     {
-        Authentication.OnAuthentification -= SetNickname;
+        Authentication.OnAuthentification -= SetUserdata;
         User.OnClick -= SetPrivateMessageUser;
 
         socket.Off(ServerEvents.CHAT_MSG, OnReciveMessage);
-        socket.Off(ServerEvents.ID, OnReciveID);
     }
 
-    private void OnReciveID(NetworkMessage networkMessage)
+    private void SetUserdata(UserData userData)
     {
-        var message = JsonConvert.DeserializeObject<ReciveID>(networkMessage.jsonMessage);
-        myUserData.id = message.id;
+        myUserData = userData;
     }
 
     private void OnReciveMessage(NetworkMessage networkMessage)
@@ -65,11 +62,6 @@ public class Chat : MonoBehaviour
         var nick = onlineManager.IdToNicknameMap[message.id];
 
         OnMessageRecive($"{nick}: {message.message}");
-    }
-
-    private void SetNickname(string nick)
-    {
-        myUserData.nick = nick;
     }
 
     private void SetPrivateMessageUser(UserData userData)

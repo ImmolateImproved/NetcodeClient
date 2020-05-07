@@ -2,16 +2,16 @@
 using System;
 using System.Collections.Generic;
 
-public class CommandManager
+public class CommandManager : MonoBehaviour
 {
     public Dictionary<string, Action<string>> commands = new Dictionary<string, Action<string>>();
 
-    public CommandManager()
+    private void OnEnable()
     {
         Chat.OnSendMessage += DeconstructMessage;
     }
 
-    public void OnDisable()
+    private void OnDisable()
     {
         Chat.OnSendMessage -= DeconstructMessage;
     }

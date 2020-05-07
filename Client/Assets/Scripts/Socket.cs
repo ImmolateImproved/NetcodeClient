@@ -11,29 +11,25 @@ public class Socket : MonoBehaviour
     private string Url = "ws://192.168.0.105:8081/ws"; //"ws://46.119.183.31:55443/ws";
 
     [SerializeField]
-    private Chat chat;
+    private bool autoConnect;
 
     private WebSocket connection;
 
     private NetworkEventsManager eventsManager;
-    private Authentication authentication;
-    private CommandManager commandManager;
 
     private void Awake()
     {
         eventsManager = new NetworkEventsManager();
 
-        commandManager = new CommandManager();
-        authentication = new Authentication(this, commandManager);
-
-        Connect();
+        if (autoConnect)
+        {
+            Connect();
+        }
     }
 
     private void OnDisable()
     {
-        commandManager.OnDisable();
-        authentication.OnDisable();
-        connection.Close();
+        connection?.Close();
     }
 
     public void Connect()
@@ -55,8 +51,8 @@ public class Socket : MonoBehaviour
 
     public void Send(int type, string jsonMessage)
     {
-        var msg = type == -1 ? jsonMessage : type + jsonMessage;
-        connection.Send(msg);
+        var msg = type + jsonMessage;
+        connection?.Send(msg);
     }
 
     private void ReciveMessage(object sender, MessageEventArgs e)
