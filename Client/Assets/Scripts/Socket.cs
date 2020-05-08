@@ -7,11 +7,16 @@ using System;
 
 public class Socket : MonoBehaviour
 {
-    [SerializeField]
-    private string Url = "ws://192.168.0.105:8081/ws"; //"ws://46.119.183.31:55443/ws";
+    private string Url;
 
     [SerializeField]
-    private bool autoConnect;
+    private string localUrl = "ws://192.168.0.105:8081/ws";
+
+    [SerializeField]
+    private string remoteUrl = "ws://46.119.183.31:55443/ws";
+
+    [SerializeField]
+    private bool isLocal;
 
     private WebSocket connection;
 
@@ -19,12 +24,9 @@ public class Socket : MonoBehaviour
 
     private void Awake()
     {
-        eventsManager = new NetworkEventsManager();
+        Url = isLocal ? localUrl : remoteUrl;
 
-        if (autoConnect)
-        {
-            Connect();
-        }
+        eventsManager = new NetworkEventsManager();
     }
 
     private void OnDisable()
@@ -69,7 +71,7 @@ public class Socket : MonoBehaviour
 
         if (int.TryParse(typeStr, out var type))
         {
-            Debug.Log("RECIVED  " + json);
+            Debug.Log($"RECIVED {typeStr} {json} ");
 
             var networkMessage = new NetworkMessage { jsonMessage = json };
             eventsManager.ReciveMessage(type, networkMessage);

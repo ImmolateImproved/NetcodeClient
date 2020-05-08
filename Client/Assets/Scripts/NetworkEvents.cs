@@ -2,6 +2,7 @@
 {
     public const int ID = 1001;
     public const int CHAT_MSG = 2002;
+    public const int PRIVATE_MSG = 2003;
     public const int ONLINE_RESPONSE = 2004;
 }
 

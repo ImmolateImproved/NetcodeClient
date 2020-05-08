@@ -61,7 +61,7 @@ public class OnlineManagerUI : MonoBehaviour
                 {
                     var user = Instantiate(userUIPrefab, parent);
                     user.Init(onlineUserDatas[i]);
-                    Debug.Log(onlineUserDatas[i].nick);
+                    Debug.Log("Online: " + onlineUserDatas[i].nick);
                     usersOnlineUI.Add(user);
                 }
             }

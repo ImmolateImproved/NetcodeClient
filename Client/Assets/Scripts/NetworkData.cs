@@ -2,32 +2,32 @@
 
 struct AuthData
 {
-    [JsonProperty("n")]
+    [JsonProperty("nick")]
     public string nickname;
 }
 #region Chat
 
 struct PublicChatMessageOut
 {
-    [JsonProperty("t")]
+    [JsonProperty("text")]
     public string message;
 }
 
 struct ChatMessageIn
 {
-    [JsonProperty("f")]
+    [JsonProperty("id")]
     public int id;
 
-    [JsonProperty("t")]
+    [JsonProperty("text")]
     public string message;
 }
 
 struct PrivateMessage
 {
-    [JsonProperty("fid")]
+    [JsonProperty("id")]
     public int toId;
 
-    [JsonProperty("t")]
+    [JsonProperty("text")]
     public string message;
 }
 #endregion
@@ -36,29 +36,16 @@ struct ReciveID
 {
     [JsonProperty("id")]
     public int id;
-
-    [JsonProperty("s")]
-    public string status;
 }
 
 #region Online Data
+[System.Serializable]
 public struct UserData
 {
     [JsonProperty("id")]
     public int id;
 
-    [JsonProperty("n")]
+    [JsonProperty("nick")]
     public string nick;
-}
-
-struct OnlineRequest
-{
-    [JsonProperty("n")]
-    public int hz;
-}
-
-struct OnlineResponse
-{
-    public UserData[] value;
 }
 #endregion

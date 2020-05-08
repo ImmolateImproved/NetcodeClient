@@ -22,6 +22,11 @@ public class TweenableUIElement : MonoBehaviour
 
     public void ShowPanel()
     {
+        if (isShowing)
+            return;
+
+        isShowing = true;
+
         if (moveX)
         {
             rectTransform.DOAnchorPosX(insightPosition, time, true).SetEase(ease);
@@ -34,6 +39,11 @@ public class TweenableUIElement : MonoBehaviour
 
     public void HidePanel()
     {
+        if (!isShowing)
+            return;
+
+        isShowing = false;
+
         if (moveX)
         {
             rectTransform.DOAnchorPosX(hidePosition, time, true).SetEase(ease);

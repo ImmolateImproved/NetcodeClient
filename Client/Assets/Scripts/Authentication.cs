@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using UnityEngine;
 using System;
+using MEC;
 
 public class Authentication : MonoBehaviour
 {
@@ -30,24 +31,29 @@ public class Authentication : MonoBehaviour
     {
         var message = JsonConvert.DeserializeObject<ReciveID>(networkMessage.jsonMessage);
         userData.id = message.id;
-        SendNickname(userData.nick);
+        Debug.Log("RECIVED ID:" + userData.id);
+        OnAuthentification(userData);
     }
 
     private void SendNickname(string nick)
     {
         userData.nick = nick;
-        OnAuthentification(userData);
         var nickMessage = new AuthData { nickname = nick };
         var nickJson = JsonConvert.SerializeObject(nickMessage);
 
-        Debug.Log("NICK   " + nickJson);
+        Debug.Log("Send NICK   " + nickJson);
 
         socket.Send(ClientEvents.SEND_NICKNAME, nickJson);
     }
 
+    public void SendNickName()
+    {
+        Timing.CallDelayed(0.3f, () => SendNickname(userData.nick));
+    }
+
     public void SetNickname(string nick)
     {
-        Debug.Log(nick);
+        Debug.Log("SET NICK: " + nick);
         userData.nick = nick;
     }
 }
