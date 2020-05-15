@@ -7,9 +7,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Networking;
 
-public class Authentication : MonoBehaviour
+[CreateAssetMenu(menuName = "ScriptableObjects/Logic/Authentication")]
+public class Authentication : Logic
 {
-    [SerializeField]
     private Socket socket;
 
     [SerializeField]
@@ -18,29 +18,27 @@ public class Authentication : MonoBehaviour
     [SerializeField]
     private string remoteAuthUrl = "46.119.183.31:55443";
 
+    [NonSerialized]
     private string login, password;
 
+    [NonSerialized]
     private TokenData token;
 
-    public static event Action<bool> OnAuthentification = delegate { };
-    public static event Action OnTokenNotFound = delegate { };
+    public event Action<bool> OnAuthentification = delegate { };
+    public event Action OnTokenNotFound = delegate { };
 
-    private void OnEnable()
+    public override void Init()
     {
-        //DataBase.ExecuteQueryWithoutAnswer(@"INSERT INTO highscores(name,score) VALUES('Joe','25');");
+        socket = LogicManager.GetLogicComponent<Socket>();
+        Timing.CallDelayed(0.1f, TryLogin);
+    }
 
-        //var data = DataBase.GetTable("SELECT * FROM highscores;");
-
-        //var id = int.Parse(data.Rows[0][1].ToString());
-
-        //Debug.Log(id);
-
-        OnStart();
-
+    public override void MyOnEnable()
+    {
         socket.On(ServerEvents.TOKEN_AUTH, AuthenticationResponseHandler);
     }
 
-    private void OnDisable()
+    public override void MyOnDisable()
     {
         socket.Off(ServerEvents.TOKEN_AUTH, AuthenticationResponseHandler);
     }
@@ -57,7 +55,7 @@ public class Authentication : MonoBehaviour
         OnAuthentification(result.status);
     }
 
-    private void OnStart()
+    private void TryLogin()
     {
         //var tokenData = SaveSystem.Load<TokenData>("token");
 
@@ -85,7 +83,7 @@ public class Authentication : MonoBehaviour
         }
     }
 
-    private IEnumerator AuthenticationCoroutine()
+    private IEnumerator<float> AuthenticationCoroutine()
     {
         var json = JsonConvert.SerializeObject(new LoginData { login = login, password = password });
         Debug.Log("LOGIN DATA: " + json);
@@ -99,7 +97,7 @@ public class Authentication : MonoBehaviour
         request.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
         request.SetRequestHeader("Content-Type", "application/json");
 
-        yield return request.SendWebRequest();
+        yield return Timing.WaitUntilDone(request.SendWebRequest());
 
         if (request.isNetworkError || request.isHttpError)
         {
@@ -116,18 +114,10 @@ public class Authentication : MonoBehaviour
         }
     }
 
-    public void Login()
-    {
-        StartCoroutine(AuthenticationCoroutine());
-    }
-
-    public void SetLogin(string login)
+    public void Login(string login, string password)
     {
         this.login = login;
-    }
-
-    public void SetPassword(string password)
-    {
         this.password = password;
+        Timing.RunCoroutine(AuthenticationCoroutine());
     }
 }

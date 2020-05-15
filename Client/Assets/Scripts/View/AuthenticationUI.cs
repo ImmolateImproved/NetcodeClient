@@ -6,7 +6,6 @@ using UnityEngine.UI;
 
 public class AuthenticationUI : MonoBehaviour
 {
-    [SerializeField]
     private Authentication authentication;
 
     [SerializeField]
@@ -15,22 +14,21 @@ public class AuthenticationUI : MonoBehaviour
     [SerializeField]
     private InputField loginInput, passwordInput;
 
-    private void Start()
+    private void Awake()
     {
-        authentication.SetLogin(loginInput.text);
-        authentication.SetPassword(passwordInput.text);
+        authentication = LogicManager.GetLogicComponent<Authentication>();
     }
 
     private void OnEnable()
     {
-        Authentication.OnAuthentification += OnAuthentification;
-        Authentication.OnTokenNotFound += OnTokenNotFound;
+        authentication.OnAuthentification += OnAuthentification;
+        authentication.OnTokenNotFound += OnTokenNotFound;
     }
 
     private void OnDisable()
     {
-        Authentication.OnAuthentification -= OnAuthentification;
-        Authentication.OnTokenNotFound -= OnTokenNotFound;
+        authentication.OnAuthentification -= OnAuthentification;
+        authentication.OnTokenNotFound -= OnTokenNotFound;
     }
 
     private void OnTokenNotFound()
@@ -46,5 +44,10 @@ public class AuthenticationUI : MonoBehaviour
         {
             Debug.Log("ОШИБКА АУТЕНТИФИКАЦИИ");
         }
+    }
+
+    public void Login()
+    {
+        authentication.Login(loginInput.text, passwordInput.text);
     }
 }

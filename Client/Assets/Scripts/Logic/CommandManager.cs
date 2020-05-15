@@ -2,18 +2,26 @@
 using System;
 using System.Collections.Generic;
 
-public class CommandManager : MonoBehaviour
+[CreateAssetMenu(menuName = "ScriptableObjects/Logic/CommandManager")]
+public class CommandManager : Logic
 {
-    public Dictionary<string, Action<string>> commands = new Dictionary<string, Action<string>>();
+    private Chat chat;
 
-    private void OnEnable()
+    private Dictionary<string, Action<string>> commands = new Dictionary<string, Action<string>>();
+
+    public override void Init()
     {
-        Chat.OnSendMessage += DeconstructMessage;
+        chat = LogicManager.GetLogicComponent<Chat>();
     }
 
-    private void OnDisable()
+    public override void MyOnEnable()
     {
-        Chat.OnSendMessage -= DeconstructMessage;
+        chat.OnSendMessage += DeconstructMessage;
+    }
+
+    public override void MyOnDisable()
+    {
+        chat.OnSendMessage -= DeconstructMessage;
     }
 
     public void On(string type, Action<string> action)

@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class UserSearcherUI : MonoBehaviour
 {
+    private UserSearcher userSearcher;
+
     [SerializeField]
     private User userUI;
 
@@ -11,17 +13,18 @@ public class UserSearcherUI : MonoBehaviour
 
     private void Awake()
     {
+        userSearcher = LogicManager.GetLogicComponent<UserSearcher>();
         userMenuElement = userUI.GetComponent<TweenableMenuElement>();
     }
 
     private void OnEnable()
     {
-        UserSearcher.OnUserFinded += OnlineManager_OnUserFinded;
+        userSearcher.OnUserFinded += OnlineManager_OnUserFinded;
     }
 
     private void OnDisable()
     {
-        UserSearcher.OnUserFinded -= OnlineManager_OnUserFinded;
+        userSearcher.OnUserFinded -= OnlineManager_OnUserFinded;
     }
 
     private void OnlineManager_OnUserFinded(UserData userData)

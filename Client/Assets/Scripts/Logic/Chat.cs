@@ -4,12 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-public class Chat : MonoBehaviour
+[CreateAssetMenu(menuName = "ScriptableObjects/Logic/Chat")]
+public class Chat : Logic
 {
-    [SerializeField]
     private Socket socket;
 
-    [SerializeField]
     private OnlineManager onlineManager;
 
     private UserData? privateMessageUser;
@@ -20,30 +19,28 @@ public class Chat : MonoBehaviour
 
     public Dictionary<int, string> privateMessages { get; private set; } = new Dictionary<int, string>();
 
-    public static event Action<string> OnSendMessage = delegate { };
-    public static event Action<string> OnMessageRecive = delegate { };
-    public static event Action<string> OnPrivateMessageRecive = delegate { };
-    public static event Action OnChatModeChanged = delegate { };
+    public event Action<string> OnSendMessage = delegate { };
+    public event Action<string> OnMessageRecive = delegate { };
+    public event Action<string> OnPrivateMessageRecive = delegate { };
 
     private Action<string> ChatAction;
 
-    private void Awake()
+    public override void Init()
     {
+        socket = LogicManager.GetLogicComponent<Socket>();
+        onlineManager = LogicManager.GetLogicComponent<OnlineManager>();
+
         ChatAction = PublicChatAction;
     }
 
-    private void OnEnable()
+    public override void MyOnEnable()
     {
-        User.OnClick += SetPrivateMessageUser;
-
         socket.On(ServerEvents.CHAT_MSG, OnReciveMessage);
         socket.On(ServerEvents.PRIVATE_MSG, OnRecivePrivateMessage);
     }
 
-    private void OnDisable()
+    public override void MyOnDisable()
     {
-        User.OnClick -= SetPrivateMessageUser;
-
         socket.Off(ServerEvents.CHAT_MSG, OnReciveMessage);
         socket.Off(ServerEvents.PRIVATE_MSG, OnRecivePrivateMessage);
     }
@@ -66,19 +63,6 @@ public class Chat : MonoBehaviour
         SavePrivateMessages(message.id, message.message, nick);
 
         OnPrivateMessageRecive($"{nick}: {message.message}");
-    }
-
-    private void SetPrivateMessageUser(UserData userData)
-    {
-        privateMessageUser = userData;
-        IsPublicMode = false;
-
-        if (!privateMessages.TryGetValue(userData.id, out var text))
-        {
-            privateMessages[userData.id] = "";
-        }
-
-        UpdateChatAction();
     }
 
     private void SavePrivateMessages(int id, string message, string targetName)
@@ -120,7 +104,6 @@ public class Chat : MonoBehaviour
 
     private void UpdateChatAction()
     {
-        OnChatModeChanged();
         if (IsPublicMode)
         {
             ChatAction = PublicChatAction;
@@ -131,21 +114,26 @@ public class Chat : MonoBehaviour
         }
     }
 
-    public void ChangeChatMode()
-    {
-        if (PrivateMessageUser == null)
-            return;
-
-        IsPublicMode = !IsPublicMode;
-        UpdateChatAction();
-    }
-
     public void ChangeChatMode(bool isPublic)
     {
         if (PrivateMessageUser == null)
             return;
+
         Debug.Log("CAHGED CHAT MODE");
         IsPublicMode = isPublic;
+        UpdateChatAction();
+    }
+
+    public void SetPrivateMessageUser(UserData userData)
+    {
+        privateMessageUser = userData;
+        IsPublicMode = false;
+
+        if (!privateMessages.TryGetValue(userData.id, out var text))
+        {
+            privateMessages[userData.id] = "";
+        }
+
         UpdateChatAction();
     }
 

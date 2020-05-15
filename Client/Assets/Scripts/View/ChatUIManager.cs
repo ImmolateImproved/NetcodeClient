@@ -14,7 +14,6 @@ public struct ChatUI
 
 public class ChatUIManager : MonoBehaviour
 {
-    [SerializeField]
     private Chat chat;
 
     [SerializeField]
@@ -28,6 +27,11 @@ public class ChatUIManager : MonoBehaviour
 
     private ChatUI activeChat;
 
+    private void Awake()
+    {
+        chat = LogicManager.GetLogicComponent<Chat>();
+    }
+
     private void Start()
     {
         activeChat = publicChat;
@@ -36,17 +40,15 @@ public class ChatUIManager : MonoBehaviour
 
     private void OnEnable()
     {
-        Chat.OnMessageRecive += Chat_OnMessageRecive;
-        Chat.OnPrivateMessageRecive += Chat_OnPrivateMessageRecive;
-        Chat.OnChatModeChanged += ChangeChatMode;
+        chat.OnMessageRecive += Chat_OnMessageRecive;
+        chat.OnPrivateMessageRecive += Chat_OnPrivateMessageRecive;
         User.OnClick += User_OnClick;
     }
 
     private void OnDisable()
     {
-        Chat.OnMessageRecive -= Chat_OnMessageRecive;
-        Chat.OnPrivateMessageRecive -= Chat_OnPrivateMessageRecive;
-        Chat.OnChatModeChanged -= ChangeChatMode;
+        chat.OnMessageRecive -= Chat_OnMessageRecive;
+        chat.OnPrivateMessageRecive -= Chat_OnPrivateMessageRecive;
         User.OnClick -= User_OnClick;
     }
 
@@ -60,6 +62,9 @@ public class ChatUIManager : MonoBehaviour
 
     private void User_OnClick(UserData userData)
     {
+        chat.SetPrivateMessageUser(userData);
+        ChangeChatMode(false);
+
         if (chat.privateMessages.TryGetValue(userData.id, out var text))
         {
             // privateChat.chatText.text = text;
@@ -80,9 +85,11 @@ public class ChatUIManager : MonoBehaviour
         publicChat.chatText.text += message + "\n";
     }
 
-    public void ChangeChatMode()
+    public void ChangeChatMode(bool isPublicMode)
     {
-        if (chat.IsPublicMode)
+        chat.ChangeChatMode(isPublicMode);
+
+        if (isPublicMode)
         {
             privateChatTweener.Hide();
 

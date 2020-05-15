@@ -4,21 +4,26 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ProfileManager : MonoBehaviour
+[CreateAssetMenu(menuName = "ScriptableObjects/Logic/ProfileManager")]
+public class ProfileManager : Logic
 {
-    [SerializeField]
     private Socket socket;
 
-    [SerializeField]
     private CommandManager commandManager;
 
     private ProfileDataFromServer myProfileData;
 
-    public static event Action<UserData> OnReciveProfileData = delegate { };
+    public event Action<UserData> OnReciveProfileData = delegate { };
 
-    public static event Action<int[]> OnReciveOnlneFriends = delegate { };
+    public event Action<int[]> OnReciveOnlneFriends = delegate { };
 
-    private void OnEnable()
+    public override void Init()
+    {
+        socket = LogicManager.GetLogicComponent<Socket>();
+        commandManager = LogicManager.GetLogicComponent<CommandManager>();
+    }
+
+    public override void MyOnEnable()
     {
         socket.On(ServerEvents.NICK_RESPONSE, NickResponseHandler);
         socket.On(ServerEvents.PROFILE_DATA_RESPONSE, ProfileDataResponseHandler);
@@ -26,7 +31,7 @@ public class ProfileManager : MonoBehaviour
         commandManager.On("/nick", SendNickname);
     }
 
-    private void OnDisable()
+    public override void MyOnDisable()
     {
         socket.Off(ServerEvents.NICK_RESPONSE, NickResponseHandler);
         socket.Off(ServerEvents.PROFILE_DATA_RESPONSE, ProfileDataResponseHandler);
@@ -68,16 +73,5 @@ public class ProfileManager : MonoBehaviour
         Debug.Log("Send NICK   " + nickJson);
 
         socket.Send(ClientEvents.SEND_NICKNAME, nickJson);
-    }
-
-    public void SendNickName()
-    {
-        Timing.CallDelayed(0.3f, () => SendNickname(myProfileData.nick));
-    }
-
-    public void SetNickname(string nick)
-    {
-        Debug.Log("SET NICK: " + nick);
-        myProfileData.nick = nick;
     }
 }

@@ -7,8 +7,9 @@ using UnityEngine.UI;
 
 public class FriendListUI : MonoBehaviour
 {
-    [SerializeField]
-    private ProfileManager profile;
+    private OnlineManager onlineManager;
+
+    private FriendListManager friendListManager;
 
     [SerializeField]
     private User userUIPrefab;
@@ -25,16 +26,22 @@ public class FriendListUI : MonoBehaviour
 
     private List<FriendProfileData> friendsProfileDatas;
 
+    private void Awake()
+    {
+        onlineManager = LogicManager.GetLogicComponent<OnlineManager>();
+        friendListManager = LogicManager.GetLogicComponent<FriendListManager>();
+    }
+
     private void OnEnable()
     {
-        FriendListManager.OnFriendsRecived += FriendListManager_OnFriendsRecived;
-        OnlineManager.OnlineChanged += OnlineManager_OnlineChanged;
+        onlineManager.OnlineChanged += OnlineManager_OnlineChanged;
+        friendListManager.OnFriendsRecived += FriendListManager_OnFriendsRecived;
     }
 
     private void OnDisable()
     {
-        FriendListManager.OnFriendsRecived -= FriendListManager_OnFriendsRecived;
-        OnlineManager.OnlineChanged -= OnlineManager_OnlineChanged;
+        onlineManager.OnlineChanged -= OnlineManager_OnlineChanged;
+        friendListManager.OnFriendsRecived -= FriendListManager_OnFriendsRecived;
     }
 
     private void FriendListManager_OnFriendsRecived(FriendProfileData[] friendsProfileDatas)
@@ -61,6 +68,7 @@ public class FriendListUI : MonoBehaviour
 
     private void OnlineManager_OnlineChanged(List<UserData> userDatas)
     {
+        onlineUserDatas = userDatas;
         onlineCountText.text = onlineUserDatas.Count.ToString();
 
         for (int i = 0; i < friendsUI.Count; i++)

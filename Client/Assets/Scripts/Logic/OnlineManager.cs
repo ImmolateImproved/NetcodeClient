@@ -4,30 +4,38 @@ using Newtonsoft.Json;
 using System;
 using MEC;
 
-public class OnlineManager : MonoBehaviour
+[CreateAssetMenu(menuName = "ScriptableObjects/Logic/OnlineManager")]
+public class OnlineManager : Logic
 {
-    [SerializeField]
-    private Socket socket;
+    private ProfileManager profileManager;
 
-    [SerializeField]
     private FriendListManager friendsManager;
 
+    [NonSerialized]
     private List<UserData> friendsOnline = new List<UserData>();
 
     public Dictionary<int, string> IdToNicknameMap { get; private set; } = new Dictionary<int, string>();
 
-    public static event Action<List<UserData>> OnlineChanged = delegate { };
+    public event Action<List<UserData>> OnlineChanged = delegate { };
 
-    private void OnEnable()
+    public override void Init()
     {
-        FriendListManager.OnAddToFriends += FriendsManager_OnAddToFriends;
-        ProfileManager.OnReciveOnlneFriends += ProfileManager_OnReciveOnlneFriends;
+        profileManager = LogicManager.GetLogicComponent<ProfileManager>();
+        friendsManager = LogicManager.GetLogicComponent<FriendListManager>();
+
+        friendsOnline = new List<UserData>();
     }
 
-    private void OnDisable()
+    public override void MyOnEnable()
     {
-        FriendListManager.OnAddToFriends -= FriendsManager_OnAddToFriends;
-        ProfileManager.OnReciveOnlneFriends -= ProfileManager_OnReciveOnlneFriends;
+        profileManager.OnReciveOnlneFriends += ProfileManager_OnReciveOnlneFriends;
+        friendsManager.OnAddToFriends += FriendsManager_OnAddToFriends;
+    }
+
+    public override void MyOnDisable()
+    {
+        profileManager.OnReciveOnlneFriends -= ProfileManager_OnReciveOnlneFriends;
+        friendsManager.OnAddToFriends -= FriendsManager_OnAddToFriends;
     }
 
     private void FriendsManager_OnAddToFriends(UserData userData)
@@ -38,15 +46,15 @@ public class OnlineManager : MonoBehaviour
 
     private void ProfileManager_OnReciveOnlneFriends(int[] friendOnlineIDs)
     {
-        //friendsOnline = friendsManager.GetOnlineFriendsByIDs(friendOnlineIDs);
+        friendsOnline = friendsManager.GetOnlineFriendsByIDs(friendOnlineIDs);
 
-        //OnlineChanged(friendsOnline);
+        OnlineChanged(friendsOnline);
 
-        //for (int i = 0; i < friendsOnline.Count; i++)
-        //{
-        //    var id = friendsOnline[i].id;
+        for (int i = 0; i < friendsOnline.Count; i++)
+        {
+            var id = friendsOnline[i].id;
 
-        //    IdToNicknameMap[id] = friendsOnline[i].nick;
-        //}
+            IdToNicknameMap[id] = friendsOnline[i].nick;
+        }
     }
 }

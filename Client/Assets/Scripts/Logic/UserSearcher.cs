@@ -2,24 +2,26 @@
 using System;
 using UnityEngine;
 
-public class UserSearcher : MonoBehaviour
+[CreateAssetMenu(menuName = "ScriptableObjects/Logic/UserSearcher")]
+public class UserSearcher : Logic
 {
-    [SerializeField]
     private Socket socket;
 
-    [SerializeField]
-    CommandManager commandManager;
+    private CommandManager commandManager;
 
-    public static event Action<UserData> OnUserFinded = delegate { };
+    public event Action<UserData> OnUserFinded = delegate { };
 
-    private void OnEnable()
+    public override void MyOnEnable()
     {
+        socket = LogicManager.GetLogicComponent<Socket>();
+        commandManager = LogicManager.GetLogicComponent<CommandManager>();
+
         socket.On(ServerEvents.SEARCH_USER_BY_NICK_RESPONSE, SearchUserResponse);
 
         commandManager.On("/search", OnUserSearch);
     }
 
-    private void OnDisable()
+    public override void MyOnDisable()
     {
         socket.Off(ServerEvents.SEARCH_USER_BY_NICK_RESPONSE, SearchUserResponse);
 

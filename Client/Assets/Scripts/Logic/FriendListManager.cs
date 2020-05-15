@@ -18,81 +18,71 @@ public struct FriendProfileData
     public Status status;
 }
 
-public class FriendListManager : MonoBehaviour
+[CreateAssetMenu(menuName = "ScriptableObjects/Logic/FriendListManager")]
+public class FriendListManager : Logic
 {
-    [SerializeField]
     private Socket socket;
 
-    private List<UserData> friendList = new List<UserData>();
+    private ProfileManager profileManager;
 
-    private int[] onlineFriendIds;
-    private bool friendListRecived;
+    [NonSerialized]
+    private List<UserData> friendList = new List<UserData>();
 
     private Dictionary<int, UserData> friendsIdMap = new Dictionary<int, UserData>();
 
     private Queue<UserData> friendRequests = new Queue<UserData>();
 
-    public static event Action<FriendProfileData[]> OnFriendsRecived = delegate { };
-    public static event Action<UserData> OnFriendRequest = delegate { };
-    public static event Action<UserData> OnAddToFriends = delegate { };
+    public event Action<FriendProfileData[]> OnFriendsRecived = delegate { };
+    public event Action<UserData> OnFriendRequest = delegate { };
+    public event Action<UserData> OnAddToFriends = delegate { };
 
-    private void OnEnable()
+    public override void Init()
     {
-        ProfileManager.OnReciveOnlneFriends += ProfileManager_OnReciveOnlneFriends;
-        User.OnAddToFriends += User_OnAddToFriendsClick;
+        socket = LogicManager.GetLogicComponent<Socket>();
+        profileManager = LogicManager.GetLogicComponent<ProfileManager>();
 
-        Timing.RunCoroutine(UpdateFriendList());
+        friendList = new List<UserData>();
+    }
+
+    public override void MyOnEnable()
+    {
+        profileManager.OnReciveOnlneFriends += ProfileManager_OnReciveOnlneFriends;
+        User.OnAddToFriends += User_OnAddToFriendsClick;
 
         socket.On(ServerEvents.ADD_TO_FRIENDS_REQUEST, AddToFriendsRequest);
     }
 
-    private void OnDisable()
+    public override void MyOnDisable()
     {
-        ProfileManager.OnReciveOnlneFriends -= ProfileManager_OnReciveOnlneFriends;
+        profileManager.OnReciveOnlneFriends -= ProfileManager_OnReciveOnlneFriends;
         User.OnAddToFriends -= User_OnAddToFriendsClick;
 
         socket.Off(ServerEvents.ADD_TO_FRIENDS_REQUEST, AddToFriendsRequest);
     }
 
-    private IEnumerator<float> UpdateFriendList()
-    {
-        while (true)
-        {
-            if (friendListRecived)
-            {
-                friendList = FriendsTableAccessor.GetFriendsList();
-                Debug.Log("FRIENDS COUNT: " + friendList.Count);
-
-                var friendsProfileDatas = new FriendProfileData[friendList.Count];
-
-                for (int i = 0; i < friendList.Count; i++)
-                {
-                    var item = friendList[i];
-                    friendsIdMap.Add(item.id, item);
-
-                    var status = Status.Offline;
-
-                    for (int j = 0; j < onlineFriendIds.Length; j++)
-                    {
-                        status = friendsIdMap.ContainsKey(onlineFriendIds[i]) ? Status.Online : Status.Offline;
-                    }
-
-                    friendsProfileDatas[i] = new FriendProfileData { userData = item, status = status };
-                }
-
-                OnFriendsRecived(friendsProfileDatas);
-
-                yield break;
-            }
-
-            yield return Timing.WaitForOneFrame;
-        }
-    }
-
     private void ProfileManager_OnReciveOnlneFriends(int[] onlineFriendIds)
     {
-        this.onlineFriendIds = onlineFriendIds;
-        friendListRecived = true;
+        friendList = FriendsTableAccessor.GetFriendsList();
+        Debug.Log("FRIENDS COUNT: " + friendList.Count);
+
+        var friendsProfileDatas = new FriendProfileData[friendList.Count];
+
+        for (int i = 0; i < friendList.Count; i++)
+        {
+            var item = friendList[i];
+            friendsIdMap.Add(item.id, item);
+
+            var status = Status.Offline;
+
+            for (int j = 0; j < onlineFriendIds.Length; j++)
+            {
+                status = friendsIdMap.ContainsKey(onlineFriendIds[i]) ? Status.Online : Status.Offline;
+            }
+
+            friendsProfileDatas[i] = new FriendProfileData { userData = item, status = status };
+        }
+
+        OnFriendsRecived(friendsProfileDatas);
     }
 
     private void User_OnAddToFriendsClick(UserData userData)

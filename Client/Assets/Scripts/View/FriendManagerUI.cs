@@ -6,8 +6,7 @@ using UnityEngine.UI;
 
 public class FriendManagerUI : MonoBehaviour
 {
-    [SerializeField]
-    private FriendListManager friendManager;
+    private FriendListManager friendListManager;
 
     [SerializeField]
     private TweenableMenuElement frendsRequestPanel;
@@ -17,14 +16,19 @@ public class FriendManagerUI : MonoBehaviour
 
     private bool ready = true;
 
+    private void Awake()
+    {
+        friendListManager = LogicManager.GetLogicComponent<FriendListManager>();
+    }
+
     private void OnEnable()
     {
-        FriendListManager.OnFriendRequest += FriendsManager_OnFriendRequest;
+        friendListManager.OnFriendRequest += FriendsManager_OnFriendRequest;
     }
 
     private void OnDisable()
     {
-        FriendListManager.OnFriendRequest -= FriendsManager_OnFriendRequest;
+        friendListManager.OnFriendRequest -= FriendsManager_OnFriendRequest;
     }
 
     private void FriendsManager_OnFriendRequest(UserData userData)
@@ -40,7 +44,7 @@ public class FriendManagerUI : MonoBehaviour
 
     public void AcceptFrend()
     {
-        friendManager.AcceptFriend(userUI.userData);
+        friendListManager.AcceptFriend(userUI.userData);
         frendsRequestPanel.Hide();
 
         ready = true;
@@ -48,7 +52,7 @@ public class FriendManagerUI : MonoBehaviour
 
     public void DeclineFrend()
     {
-        friendManager.DeclineFriend();
+        friendListManager.DeclineFriend();
         frendsRequestPanel.Hide();
 
         ready = true;

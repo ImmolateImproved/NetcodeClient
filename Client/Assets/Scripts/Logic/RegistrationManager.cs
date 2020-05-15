@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using MEC;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,9 +22,9 @@ struct FaildResponse
     public string error;
 }
 
-public class RegistrationManager : MonoBehaviour
+[CreateAssetMenu(menuName = "ScriptableObjects/Logic/RegistrationManager")]
+public class RegistrationManager : Logic
 {
-    [SerializeField]
     private Socket socket;
 
     [SerializeField]
@@ -32,12 +33,18 @@ public class RegistrationManager : MonoBehaviour
     [SerializeField]
     private string remoteAuthUrl = "46.119.183.31:55443";
 
+    [NonSerialized]
     private string login, password;
 
-    public static event Action OnRegistrationSucceed = delegate { };
-    public static event Action OnRegistrationFaild = delegate { };
+    public event Action OnRegistrationSucceed = delegate { };
+    public event Action OnRegistrationFaild = delegate { };
 
-    private IEnumerator RegistrationCoroutine()
+    public override void Init()
+    {
+        socket = LogicManager.GetLogicComponent<Socket>();
+    }
+
+    private IEnumerator<float> RegistrationCoroutine()
     {
         var json = JsonConvert.SerializeObject(new LoginData { login = login, password = password });
 
@@ -50,7 +57,7 @@ public class RegistrationManager : MonoBehaviour
         request.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
         request.SetRequestHeader("Content-Type", "application/json");
 
-        yield return request.SendWebRequest();
+        yield return Timing.WaitUntilDone(request.SendWebRequest());
 
         if (request.isNetworkError || request.isHttpError)
         {
@@ -66,18 +73,11 @@ public class RegistrationManager : MonoBehaviour
         }
     }
 
-    public void Registration()
-    {
-        StartCoroutine(RegistrationCoroutine());
-    }
-
-    public void SetLogin(string login)
+    public void Registration(string login, string password)
     {
         this.login = login;
-    }
-
-    public void SetPassword(string password)
-    {
         this.password = password;
+
+        Timing.RunCoroutine(RegistrationCoroutine());
     }
 }

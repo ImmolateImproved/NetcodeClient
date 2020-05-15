@@ -17,7 +17,8 @@ public struct NetworkEvents
     public NetworkMessage networkMessage;
 }
 
-public class Socket : MonoBehaviour
+[CreateAssetMenu(menuName = "ScriptableObjects/Logic/Socket")]
+public class Socket : Logic
 {
     [SerializeField]
     private string localWSUrl = "192.168.0.105:8081";
@@ -48,20 +49,25 @@ public class Socket : MonoBehaviour
 
     public bool IsLocal => isLocal;
 
-    private void Awake()
+    public override void Init()
     {
         eventsManager = new NetworkEventsManager();
     }
 
-    private void OnEnable()
+    public override void MyOnEnable()
     {
         reciveMessageHandle = Timing.RunCoroutine(ReciveNetworkMessages());
     }
 
-    private void OnDisable()
+    public override void MyOnDisable()
     {
         Timing.KillCoroutines(reciveMessageHandle);
         connection?.Close();
+    }
+
+    public override void MyOnDestroy()
+    {
+        connection = null;
     }
 
     private void ReciveMessage(object sender, MessageEventArgs e)
