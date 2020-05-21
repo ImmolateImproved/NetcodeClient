@@ -18,10 +18,8 @@ public class Authentication : Logic
     [SerializeField]
     private string remoteAuthUrl = "46.119.183.31:55443";
 
-    [NonSerialized]
     private string login, password;
 
-    [NonSerialized]
     private TokenData token;
 
     public event Action<bool> OnAuthentification = delegate { };
@@ -51,6 +49,11 @@ public class Authentication : Logic
 
         var json = JsonConvert.SerializeObject(token);
         socket.Send(ClientEvents.PROFILE_DATA_REQUEST, json);
+
+        if (result.status)
+        {
+            DataBase.Init(login);
+        }
 
         OnAuthentification(result.status);
     }

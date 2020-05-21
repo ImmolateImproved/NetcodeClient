@@ -10,9 +10,26 @@ public class DataBase : MonoBehaviour
     private static SQLiteConnection connection;
     private static SQLiteCommand command;
 
+    private static string dbName;
+
+    private const string originalDBName = "mydb.db";
+
+    public static void Init(string dbName)
+    {
+        DataBase.dbName = dbName;
+        var path = Path.Combine(Application.persistentDataPath, dbName + ".db");
+
+        if (!File.Exists(path))
+        {
+            var pathToOriginalBD = Path.Combine(Application.persistentDataPath, originalDBName);
+            File.Copy(pathToOriginalBD, path);
+        }
+    }
+
     public static void Connect()
     {
-        var path = Path.Combine("URI=file:" + Application.dataPath, "mydb.db");
+        var path = Path.Combine("URI=file:" + Application.persistentDataPath, dbName + ".db");
+
         connection = new SQLiteConnection(path);
         command = new SQLiteCommand(connection);
         connection.Open();
@@ -60,17 +77,7 @@ public class DataBase : MonoBehaviour
 
     public void Perform()
     {
-        //DataBase.ExecuteQueryWithoutAnswer("INSERT INTO friends(id,nick) VALUES('25','Dead');");
-
-        //var data = DataBase.GetTable("SELECT * FROM friends;");
-
-        //var id = (data.Rows[0][1].ToString());
-
-        //FriendsDataBaseAccessor.AddFriend(new UserData { id = 1, nick = "Rembo" });
-        //FriendsDataBaseAccessor.AddFriend(new UserData { id = 2, nick = "QWEr" });
-        //FriendsDataBaseAccessor.AddFriend(new UserData { id = 3, nick = "Shotaketa" });
-
-        FriendsTableAccessor.GetFriendsList();
+        FriendsTableAccessor.AddFriend(new UserData { id = 4, nick = "Unnamed" });
     }
 }
 

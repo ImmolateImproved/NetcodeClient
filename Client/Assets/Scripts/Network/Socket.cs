@@ -5,6 +5,7 @@ using System.Text;
 using Newtonsoft.Json;
 using System;
 using MEC;
+using System.Net.Sockets;
 
 public enum UrlType
 {
@@ -27,9 +28,14 @@ public class Socket : Logic
     private string remoteWSUrl = "46.119.183.31:55443";
 
     [SerializeField]
+    private UrlData localURL;
+    [SerializeField]
+    private UrlData remoteURL;
+
+    [SerializeField]
     private bool isLocal;
 
-    private WebSocket connection;
+    private TCPSocket connection;
 
     private object queueLock = new object();
 
@@ -43,7 +49,7 @@ public class Socket : Logic
     {
         get
         {
-            return connection != null && connection.IsAlive;
+            return connection != null && connection.IsOpen;
         }
     }
 
@@ -70,16 +76,13 @@ public class Socket : Logic
         connection = null;
     }
 
-    private void ReciveMessage(object sender, MessageEventArgs e)
+    private void ReciveMessage(string message)
     {
-        var bytes = e.RawData;
-
-        var str = Encoding.UTF8.GetString(bytes);
-        var messages = str.Split('\n');
-        for (int i = 0; i < messages.Length; i++)
+        var msg = message.Split('\n');
+        for (int i = 0; i < msg.Length; i++)
         {
-            var typeStr = messages[i].Substring(0, 4);
-            var json = messages[i].Substring(4);
+            var typeStr = msg[i].Substring(0, 4);
+            var json = msg[i].Substring(4);
 
             Debug.Log($"RECIVED {typeStr}");
 
@@ -139,11 +142,10 @@ public class Socket : Logic
 
     public void Connect()
     {
-        var url = isLocal ? localWSUrl : remoteWSUrl;
-        url = GetUrl(UrlType.WS, url);
+        var url = isLocal ? localURL : remoteURL;
 
-        connection = new WebSocket(url);
-        connection.OnMessage += ReciveMessage;
+        connection = new TCPSocket(url);
+        connection.OnMesageRecive += ReciveMessage;
 
         connection.Connect();
     }
