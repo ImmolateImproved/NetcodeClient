@@ -1,10 +1,6 @@
-﻿using JetBrains.Annotations;
-using MEC;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
-using System.Linq;
 using UnityEngine;
 
 public enum Status
@@ -21,7 +17,7 @@ public struct FriendProfileData
 [CreateAssetMenu(menuName = "ScriptableObjects/Logic/FriendListManager")]
 public class FriendListManager : Logic
 {
-    private Socket socket;
+    private NetworkManager networkManager;
 
     private ProfileManager profileManager;
 
@@ -38,7 +34,7 @@ public class FriendListManager : Logic
 
     public override void Init()
     {
-        socket = LogicManager.GetLogicComponent<Socket>();
+        networkManager = LogicManager.GetLogicComponent<NetworkManager>();
         profileManager = LogicManager.GetLogicComponent<ProfileManager>();
 
         friendList = new List<UserData>();
@@ -49,7 +45,7 @@ public class FriendListManager : Logic
         profileManager.OnReciveOnlneFriends += ProfileManager_OnReciveOnlneFriends;
         User.OnAddToFriends += User_OnAddToFriendsClick;
 
-        socket.On(ServerEvents.ADD_TO_FRIENDS_REQUEST, AddToFriendsRequest);
+        networkManager.On(ServerEvents.ADD_TO_FRIENDS_REQUEST, AddToFriendsRequest);
     }
 
     public override void MyOnDisable()
@@ -57,7 +53,7 @@ public class FriendListManager : Logic
         profileManager.OnReciveOnlneFriends -= ProfileManager_OnReciveOnlneFriends;
         User.OnAddToFriends -= User_OnAddToFriendsClick;
 
-        socket.Off(ServerEvents.ADD_TO_FRIENDS_REQUEST, AddToFriendsRequest);
+        networkManager.Off(ServerEvents.ADD_TO_FRIENDS_REQUEST, AddToFriendsRequest);
     }
 
     private void ProfileManager_OnReciveOnlneFriends(int[] onlineFriendIds)
@@ -88,7 +84,7 @@ public class FriendListManager : Logic
     private void User_OnAddToFriendsClick(UserData userData)
     {
         var json = JsonConvert.SerializeObject(new AddToFriendsRequest { id = userData.id, request = true });
-        socket.Send(ClientEvents.ADD_TO_FRIENDS_REQUEST, json);
+        networkManager.Send(ClientEvents.ADD_TO_FRIENDS_REQUEST, json);
     }
 
     private void AddToFriendsRequest(NetworkMessage networkMessage)
@@ -132,7 +128,7 @@ public class FriendListManager : Logic
     public void AcceptFriend(UserData userData)
     {
         var json = JsonConvert.SerializeObject(new AddToFriendsRequest { id = userData.id, request = false });
-        socket.Send(ClientEvents.ADD_TO_FRIENDS_REQUEST, json);
+        networkManager.Send(ClientEvents.ADD_TO_FRIENDS_REQUEST, json);
 
         friendList.Add(userData);
 

@@ -5,7 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "ScriptableObjects/Logic/UserSearcher")]
 public class UserSearcher : Logic
 {
-    private Socket socket;
+    private NetworkManager networkManager;
 
     private CommandManager commandManager;
 
@@ -13,17 +13,17 @@ public class UserSearcher : Logic
 
     public override void MyOnEnable()
     {
-        socket = LogicManager.GetLogicComponent<Socket>();
+        networkManager = LogicManager.GetLogicComponent<NetworkManager>();
         commandManager = LogicManager.GetLogicComponent<CommandManager>();
 
-        socket.On(ServerEvents.SEARCH_USER_BY_NICK_RESPONSE, SearchUserResponse);
+        networkManager.On(ServerEvents.SEARCH_USER_BY_NICK_RESPONSE, SearchUserResponse);
 
         commandManager.On("/search", OnUserSearch);
     }
 
     public override void MyOnDisable()
     {
-        socket.Off(ServerEvents.SEARCH_USER_BY_NICK_RESPONSE, SearchUserResponse);
+        networkManager.Off(ServerEvents.SEARCH_USER_BY_NICK_RESPONSE, SearchUserResponse);
 
         commandManager.Off("/search", OnUserSearch);
     }
@@ -32,7 +32,7 @@ public class UserSearcher : Logic
     {
         var json = JsonConvert.SerializeObject(new UserNick { nick = nick });
 
-        socket.Send(ClientEvents.SEARCH_USER_BY_NICK_REQUEST, json);
+        networkManager.Send(ClientEvents.SEARCH_USER_BY_NICK_REQUEST, json);
     }
 
     private void SearchUserResponse(NetworkMessage networkMessage)

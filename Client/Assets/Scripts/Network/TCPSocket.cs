@@ -2,16 +2,15 @@
 using System.Text;
 using System.Threading.Tasks;
 using System;
-using System.Security.Policy;
 
-[System.Serializable]
+[Serializable]
 public struct UrlData
 {
     public string ip;
     public int port;
 }
 
-public class TCPSocket
+public class TCPSocket : ITCPSocket
 {
     private readonly string ip = "192.168.0.105";
     private readonly int port = 8080;
@@ -21,7 +20,7 @@ public class TCPSocket
 
     public bool IsOpen => connection.Connected;
 
-    public event Action<string> OnMesageRecive = delegate { };
+    public event Action<string> OnMessageReceive = delegate { };
 
     public TCPSocket(string ip, int port)
     {
@@ -73,7 +72,7 @@ public class TCPSocket
             while (stream.DataAvailable);
 
             var message = builder.ToString();
-            OnMesageRecive(message);
+            OnMessageReceive(message);
         }
     }
 }

@@ -1,10 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net.Sockets;
-using System.Net;
-using System.Text;
-using System.Threading;
-using UnityEngine;
 
 public struct NetworkMessage
 {
@@ -13,8 +8,8 @@ public struct NetworkMessage
 
 public class NetworkEventsManager
 {
-    Dictionary<int, Action<NetworkMessage>> networkEvents = new Dictionary<int, Action<NetworkMessage>>();
-
+    private Dictionary<int, Action<NetworkMessage>> networkEvents = new Dictionary<int, Action<NetworkMessage>>();
+    
     public void ReciveMessage(int type, NetworkMessage message)
     {
         if (networkEvents.TryGetValue(type, out var action))

@@ -25,7 +25,7 @@ struct FaildResponse
 [CreateAssetMenu(menuName = "ScriptableObjects/Logic/RegistrationManager")]
 public class RegistrationManager : Logic
 {
-    private Socket socket;
+    private NetworkManager networkManager;
 
     [SerializeField]
     private string localAuthUrl = "192.168.0.105:8080";
@@ -41,15 +41,15 @@ public class RegistrationManager : Logic
 
     public override void Init()
     {
-        socket = LogicManager.GetLogicComponent<Socket>();
+        networkManager = LogicManager.GetLogicComponent<NetworkManager>();
     }
 
     private IEnumerator<float> RegistrationCoroutine()
     {
         var json = JsonConvert.SerializeObject(new LoginData { login = login, password = password });
 
-        var url = socket.IsLocal ? localAuthUrl : remoteAuthUrl;
-        url = socket.GetUrl(UrlType.Reg, url);
+        var url = networkManager.IsLocal ? localAuthUrl : remoteAuthUrl;
+        url = NetworkManager.GetUrl(UrlType.Reg, url);
 
         var request = new UnityWebRequest(url, "POST");
         byte[] jsonToSend = new System.Text.UTF8Encoding().GetBytes(json);

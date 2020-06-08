@@ -10,7 +10,7 @@ using UnityEngine.Networking;
 [CreateAssetMenu(menuName = "ScriptableObjects/Logic/Authentication")]
 public class Authentication : Logic
 {
-    private Socket socket;
+    private NetworkManager networkManager;
 
     [SerializeField]
     private string localAuthUrl = "192.168.0.105:8080";
@@ -27,18 +27,19 @@ public class Authentication : Logic
 
     public override void Init()
     {
-        socket = LogicManager.GetLogicComponent<Socket>();
+        networkManager = LogicManager.GetLogicComponent<NetworkManager>();
+
         Timing.CallDelayed(0.1f, TryLogin);
     }
 
     public override void MyOnEnable()
     {
-        socket.On(ServerEvents.TOKEN_AUTH, AuthenticationResponseHandler);
+        networkManager.On(ServerEvents.TOKEN_AUTH, AuthenticationResponseHandler);
     }
 
     public override void MyOnDisable()
     {
-        socket.Off(ServerEvents.TOKEN_AUTH, AuthenticationResponseHandler);
+        networkManager.Off(ServerEvents.TOKEN_AUTH, AuthenticationResponseHandler);
     }
 
     private void AuthenticationResponseHandler(NetworkMessage networkMessage)
@@ -48,7 +49,7 @@ public class Authentication : Logic
         Debug.Log("AuthenticationStatus: " + result.status);
 
         var json = JsonConvert.SerializeObject(token);
-        socket.Send(ClientEvents.PROFILE_DATA_REQUEST, json);
+        networkManager.Send(ClientEvents.PROFILE_DATA_REQUEST, json);
 
         if (result.status)
         {
@@ -91,8 +92,8 @@ public class Authentication : Logic
         var json = JsonConvert.SerializeObject(new LoginData { login = login, password = password });
         Debug.Log("LOGIN DATA: " + json);
 
-        var url = socket.IsLocal ? localAuthUrl : remoteAuthUrl;
-        url = socket.GetUrl(UrlType.Auth, url);
+        var url = networkManager.IsLocal ? localAuthUrl : remoteAuthUrl;
+        url = NetworkManager.GetUrl(UrlType.Auth, url);
 
         var request = new UnityWebRequest(url, "POST");
         byte[] jsonToSend = new System.Text.UTF8Encoding().GetBytes(json);
@@ -112,8 +113,8 @@ public class Authentication : Logic
             SaveSystem.Save(token, "token");
             Debug.Log("request.downloadHandler.text: " + request.downloadHandler.text);
 
-            socket.Connect();
-            socket.Send(ClientEvents.TOKEN_AUTH, request.downloadHandler.text);
+            networkManager.Connect();
+            networkManager.Send(ClientEvents.TOKEN_AUTH, request.downloadHandler.text);
         }
     }
 

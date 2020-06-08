@@ -11,10 +11,9 @@ public class OnlineManager : Logic
 
     private FriendListManager friendsManager;
 
-    [NonSerialized]
     private List<UserData> friendsOnline = new List<UserData>();
 
-    public Dictionary<int, string> IdToNicknameMap { get; private set; } = new Dictionary<int, string>();
+    private Dictionary<int, string> idToNicknameMap = new Dictionary<int, string>();
 
     public event Action<List<UserData>> OnlineChanged = delegate { };
 
@@ -38,6 +37,16 @@ public class OnlineManager : Logic
         friendsManager.OnAddToFriends -= FriendsManager_OnAddToFriends;
     }
 
+    public string GetNickById(int id)
+    {
+        if (idToNicknameMap.TryGetValue(id, out var nick))
+        {
+            return nick;
+        }
+
+        return "Username";
+    }
+
     private void FriendsManager_OnAddToFriends(UserData userData)
     {
         friendsOnline.Add(userData);
@@ -54,7 +63,7 @@ public class OnlineManager : Logic
         {
             var id = friendsOnline[i].id;
 
-            IdToNicknameMap[id] = friendsOnline[i].nick;
+            idToNicknameMap[id] = friendsOnline[i].nick;
         }
     }
 }

@@ -5,13 +5,13 @@ using System.Collections.Generic;
 [CreateAssetMenu(menuName = "ScriptableObjects/Logic/CommandManager")]
 public class CommandManager : Logic
 {
-    private Chat chat;
+    private ChatManager chat;
 
     private Dictionary<string, Action<string>> commands = new Dictionary<string, Action<string>>();
 
     public override void Init()
     {
-        chat = LogicManager.GetLogicComponent<Chat>();
+        chat = LogicManager.GetLogicComponent<ChatManager>();
     }
 
     public override void MyOnEnable()

@@ -7,7 +7,7 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "ScriptableObjects/Logic/ProfileManager")]
 public class ProfileManager : Logic
 {
-    private Socket socket;
+    private NetworkManager networkManager;
 
     private CommandManager commandManager;
 
@@ -19,22 +19,22 @@ public class ProfileManager : Logic
 
     public override void Init()
     {
-        socket = LogicManager.GetLogicComponent<Socket>();
+        networkManager = LogicManager.GetLogicComponent<NetworkManager>();
         commandManager = LogicManager.GetLogicComponent<CommandManager>();
     }
 
     public override void MyOnEnable()
     {
-        socket.On(ServerEvents.NICK_RESPONSE, NickResponseHandler);
-        socket.On(ServerEvents.PROFILE_DATA_RESPONSE, ProfileDataResponseHandler);
+        networkManager.On(ServerEvents.NICK_RESPONSE, NickResponseHandler);
+        networkManager.On(ServerEvents.PROFILE_DATA_RESPONSE, ProfileDataResponseHandler);
 
         commandManager.On("/nick", SendNickname);
     }
 
     public override void MyOnDisable()
     {
-        socket.Off(ServerEvents.NICK_RESPONSE, NickResponseHandler);
-        socket.Off(ServerEvents.PROFILE_DATA_RESPONSE, ProfileDataResponseHandler);
+        networkManager.Off(ServerEvents.NICK_RESPONSE, NickResponseHandler);
+        networkManager.Off(ServerEvents.PROFILE_DATA_RESPONSE, ProfileDataResponseHandler);
 
         commandManager.Off("/nick", SendNickname);
     }
@@ -72,6 +72,6 @@ public class ProfileManager : Logic
 
         Debug.Log("Send NICK   " + nickJson);
 
-        socket.Send(ClientEvents.SEND_NICKNAME, nickJson);
+        networkManager.Send(ClientEvents.SEND_NICKNAME, nickJson);
     }
 }
