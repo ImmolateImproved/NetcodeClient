@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f234f989eab166549affe2d77bae6c6e, type: 3}
   m_Name: ChatManager
   m_EditorClassIdentifier: 
-  chatFactory: {fileID: 11400000, guid: c606a079d441b4c4a945ce0252e3869a, type: 2}
+  chatFactory: {fileID: 11400000, guid: 431f7d012cc20eb42b81464cff57fade, type: 2}
